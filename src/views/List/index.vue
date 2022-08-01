@@ -1,6 +1,3 @@
-/* eslint-disable array-callback-return */ /* eslint-disable
-array-callback-return */ /* eslint-disable array-callback-return */ /*
-eslint-disable array-callback-return */
 <template>
   <div class="list">
     <div>
@@ -220,9 +217,6 @@ export default {
       this.show = true
     }
   },
-  // created() {
-
-  // },
   mounted() {
     this.$bus.$on('hotCityList', (val) => (this.hotCity = val))
     this.searchTenement()

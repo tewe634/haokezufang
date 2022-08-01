@@ -21,11 +21,11 @@
     <!-- 图片 -->
     <div class="flexable" v-if="$router.currentRoute.meta.isShow">
       <div>
-        <img src="../../assets/imgs/2.png" alt="" @click="fn(1)" />
+        <img src="../../assets/imgs/2.png" alt="" @click="fn" />
         <p>整租</p>
       </div>
       <div>
-        <img src="../../assets/imgs/4.png" alt="" @click="fn(1)" />
+        <img src="../../assets/imgs/4.png" alt="" @click="fn" />
         <p>合租</p>
       </div>
       <div>
@@ -95,9 +95,8 @@ export default {
         console.log(error.message)
       }
     },
-    fn(val) {
-      this.$router.push('/home/list')
-      this.$bus.$on('goNumber', val)
+    fn() {
+      this.$bus.$emit('goList')
     }
   },
   mounted() {
