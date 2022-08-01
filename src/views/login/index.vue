@@ -70,9 +70,9 @@ export default {
       try {
         const data = { username: this.username, password: this.password }
         const res = await this.$API.getLongin(data)
-        console.log(res)
         this.$store.commit('SEND_TOKEN', res.data.body.token)
         this.$router.push('/home/profile')
+        this.getInfo()
         this.$toast.success(res.data.description)
       } catch (error) {
         console.log(error)
@@ -81,6 +81,11 @@ export default {
     // 返回上一级
     onClickLeft() {
       this.$router.go(-1)
+    },
+    // 获取用户信息
+    async getInfo() {
+      const res = await this.$API.getInfo()
+      this.$bus.$emit('InfoList', res.data.body)
     }
   }
 }

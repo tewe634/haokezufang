@@ -19,12 +19,13 @@ export default {
     return {
       active: this.$router.currentRoute.meta.num
     }
+  },
+  mounted() {
+    this.$bus.$on('goNumber', (val) => (this.active = val))
+  },
+  beforeDestroy() {
+    this.$bus.$off('goNumber')
   }
-  // mounted() {
-  //   this.$bus.$on('toggleImg', (val) => {
-  //     return (this.active = val)
-  //   })
-  // }
 }
 </script>
 

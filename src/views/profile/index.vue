@@ -1,7 +1,32 @@
 <template>
   <div class="profile">
+    <!-- 登入成功 -->
+    <div class="My_title__39w3V" v-if="isShow">
+      <div class="My_info__eOYeg">
+        <van-image
+          round
+          width="70px"
+          height="70px"
+          fit="cover"
+          :src="`http://liufusong.top:8080${obj.avatar}`"
+        />
+        <p class="My_name__3U2NB">{{ obj.nickname }}</p>
+        <van-button
+          size="small"
+          round
+          type="primary"
+          color="#21b97a"
+          @click="loginOut"
+          >退出</van-button
+        >
+        <div class="My_edit__3wqlv">
+          <span>编辑个人资料</span>
+          <i class="iconfont icon-arrow"></i>
+        </div>
+      </div>
+    </div>
     <!-- 登入 -->
-    <div class="My-bg" v-if="!$store.state.token">
+    <div class="My-bg" v-else>
       <div class="My_info__eOYeg">
         <van-image
           round
@@ -19,26 +44,6 @@
           color="#21b97a"
           >去登录</van-button
         >
-      </div>
-    </div>
-    <!-- 登入成功 -->
-    <div class="My_title__39w3V" v-else>
-      <div class="My_info__eOYeg">
-        <van-image
-          round
-          width="70px"
-          height="70px"
-          fit="cover"
-          src="http://liufusong.top:8080/img/profile/avatar.png"
-        />
-        <p class="My_name__3U2NB">好客_845296</p>
-        <van-button size="small" round type="primary" color="#21b97a"
-          >退出</van-button
-        >
-        <div class="My_edit__3wqlv">
-          <span>编辑个人资料</span>
-          <i class="iconfont icon-arrow"></i>
-        </div>
       </div>
     </div>
     <!-- 小图片 -->
@@ -97,7 +102,35 @@
 
 <script>
 export default {
-  name: 'profile'
+  name: 'profile',
+  data() {
+    return {
+      obj: {}
+    }
+  },
+  methods: {
+    loginOut() {
+      this.$dialog
+        .confirm({
+          title: '提示',
+          message: '是否确认退出'
+        })
+        .then(async () => {
+          const res = await this.$API.getLogout()
+          console.log(res)
+          this.$store.commit('SEND_TOKEN', '')
+        })
+        .catch(() => {})
+    }
+  },
+  computed: {
+    isShow() {
+      return !!this.$store.state.token
+    }
+  },
+  mounted() {
+    this.$bus.$on('InfoList', (val) => (this.obj = val))
+  }
 }
 </script>
 

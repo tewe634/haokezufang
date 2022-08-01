@@ -5,13 +5,17 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    token: getToken() || ''
+    token: getToken() || '',
+    city: '北京'
   },
   getters: {},
   mutations: {
     SEND_TOKEN(state, payload) {
       state.token = payload
       setToken(payload)
+    },
+    HOTCITY(state, payload) {
+      state.city = payload
     }
   },
   actions: {},

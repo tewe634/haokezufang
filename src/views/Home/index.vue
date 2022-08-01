@@ -96,9 +96,8 @@ export default {
       }
     },
     fn(val) {
-      this.$router.push({
-        path: '/home/list'
-      })
+      this.$router.push('/home/list')
+      this.$bus.$on('goNumber', val)
     }
   },
   mounted() {

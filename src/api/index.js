@@ -24,3 +24,8 @@ export const getHouse = (params) =>
 // /houses/condition 获取房屋查询条件 get
 export const getTenement = (id) =>
   request({ url: `/houses/condition/?id=${id}`, method: 'GET' })
+
+// /user 获取用户信息 get
+export const getInfo = () => request({ url: '/user', method: 'GET' })
+// /user/logout 退出 post 带token
+export const getLogout = () => request({ url: '/user/logout', method: 'POST' })

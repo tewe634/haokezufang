@@ -1,3 +1,6 @@
+/* eslint-disable array-callback-return */ /* eslint-disable
+array-callback-return */ /* eslint-disable array-callback-return */ /*
+eslint-disable array-callback-return */
 <template>
   <div class="list">
     <div>
@@ -6,7 +9,7 @@
       <van-search v-model="value" show-action placeholder="请输入小区或地址">
         <template #left-icon>
           <div @click="$router.push('/city')">
-            <span>北京</span>
+            <span>{{ hotDiZhi1 }}</span>
             <i class="iconfont icon-arrow"> | </i>
           </div>
         </template>
@@ -69,6 +72,48 @@
         :columns="columns"
       />
     </div>
+    <van-popup
+      v-model="show"
+      position="right"
+      :style="{ height: '1020px', width: '295px' }"
+    >
+      <ul>
+        <p>户型</p>
+        <div>
+          <li v-for="(item, index) in houseObj.roomType" :key="index">
+            {{ item.label }}
+          </li>
+        </div>
+      </ul>
+      <ul>
+        <p>朝向</p>
+        <div>
+          <li v-for="(item, index) in houseObj.oriented" :key="index">
+            {{ item.label }}
+          </li>
+        </div>
+      </ul>
+      <ul>
+        <p>楼层</p>
+        <div>
+          <li v-for="(item, index) in houseObj.rentType" :key="index">
+            {{ item.label }}
+          </li>
+        </div>
+      </ul>
+      <ul>
+        <p>房屋亮点</p>
+        <div>
+          <li v-for="(item, index) in houseObj.characteristic" :key="index">
+            {{ item.label }}
+          </li>
+        </div>
+      </ul>
+      <div class="footer">
+        <button class="clear">清除</button>
+        <button class="show">确认</button>
+      </div>
+    </van-popup>
     <!-- 列表 -->
     <van-list>
       <van-cell v-for="(item, index) in list" :key="index">
@@ -100,6 +145,13 @@
 </template>
 
 <script>
+// const deep = function (arr) {
+//   if (!arr[0]) return []
+//   arr[0].children[0].children = [{ text: '' }]
+//   arr[1].children[0].children = [{ text: '' }]
+//   arr[0].children[0].defaultIndex = 1
+//   return arr
+// }
 export default {
   name: 'list',
   data() {
@@ -109,7 +161,11 @@ export default {
       currentIndex: '2',
       columns: [],
       list: [],
-      houseObj: {}
+      houseObj: {},
+      show: false,
+      hotDiZhi1: this.$store.state.city,
+      city: 'AREA|88cff55c-aaa4-e2e0',
+      hotCity: []
     }
   },
   methods: {
@@ -119,8 +175,12 @@ export default {
     },
     // 根据条件查询房屋
     async searchHouse() {
+      this.$toast.loading({
+        message: '加载中...',
+        forbidClick: true
+      })
       try {
-        const params = { cityId: 'AREA|88cff55c-aaa4-e2e0' }
+        const params = { cityId: this.city }
         const res = await this.$API.getHouse(params)
         if (res.data.status === 200) {
           this.list = res.data.body.list
@@ -131,8 +191,7 @@ export default {
     },
     // 获取房屋查询条件
     async searchTenement() {
-      const res = await this.$API.getTenement('AREA|88cff55c-aaa4-e2e0')
-      console.log(res)
+      const res = await this.$API.getTenement(this.city)
       if (res.data.status === 200) {
         this.houseObj = res.data.body || {}
       }
@@ -141,22 +200,6 @@ export default {
     areaHouse(val) {
       this.isShoww = true
       this.currentIndex = val
-      this.columns = this.columns.push(this.houseObj.area)
-      //  columns: [
-      //   {
-      //     text: '浙江',
-      //     children: [
-      //       {
-      //         text: '杭州',
-      //         children: [{ text: '西湖区' }, { text: '余杭区' }],
-      //       },
-      //       {
-      //         text: '温州',
-      //         children: [{ text: '鹿城区' }, { text: '瓯海区' }],
-      //       },
-      //     ],
-      //   },
-      //  ]
     },
     // 方式
     madeHouse(val) {
@@ -174,11 +217,32 @@ export default {
     sortHouse(val) {
       this.isShoww = false
       this.currentIndex = val
+      this.show = true
     }
   },
+  // created() {
+
+  // },
   mounted() {
-    this.searchHouse()
+    this.$bus.$on('hotCityList', (val) => (this.hotCity = val))
     this.searchTenement()
+    this.searchHouse()
+  },
+  watch: {
+    hotDiZhi1: {
+      immediate: true,
+      handler(newval) {
+        if (newval === '上海') {
+          this.city = 'AREA|dbf46d32-7e76-1196'
+        } else if (newval === '广州') {
+          this.city = 'AREA|e4940177-c04c-383d'
+        } else if (newval === '深圳') {
+          this.city = 'AREA|a6649a11-be98-b150'
+        } else {
+          this.city = 'AREA|88cff55c-aaa4-e2e0'
+        }
+      }
+    }
   }
 }
 </script>
@@ -273,6 +337,58 @@ export default {
     width: 3.3333rem;
     font-size: 0.48rem;
     color: #21b97a;
+  }
+}
+:deep(.van-popup--right) {
+  padding: 0 0.4rem;
+  ul {
+    margin-top: 0.3733rem;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 0.3733rem;
+    p {
+      margin: 0.5333rem 0;
+      font-size: 0.4rem;
+      color: #333;
+    }
+    div {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      li {
+        height: 0.8533rem;
+        line-height: 0.8533rem;
+        width: 30%;
+        margin: 0 0.48rem 0.4rem 0;
+        border: 0.0267rem solid #ddd;
+        border-radius: 0.08rem;
+        text-align: center;
+        font-size: 0.32rem;
+        color: #888;
+      }
+    }
+  }
+  .footer {
+    position: sticky;
+    display: flex;
+    z-index: 999;
+    bottom: 0;
+    right: 0;
+    margin-right: -0.4rem;
+    .show {
+      background-color: #21b97a;
+      width: 5.2267rem;
+      color: #fff;
+    }
+    .clear {
+      background-color: #fff;
+      width: 2.6133rem;
+      color: #21b97a;
+    }
+    button {
+      height: 1.3333rem;
+      border: none;
+      font-size: 0.48rem;
+    }
   }
 }
 </style>
