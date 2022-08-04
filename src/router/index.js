@@ -73,9 +73,36 @@ const routes = [
     meta: { footer: false, isShow: false }
   },
   {
-    path: '/registe',
-    component: () => import('@/views/registe'),
+    name: 'detail',
+    path: '/detail/:code',
+    component: () => import('@/views/detail'),
     meta: { footer: false, isShow: false }
+  },
+  {
+    name: 'favorate',
+    path: '/favorate',
+    component: () => import('@/views/favorate'),
+    meta: { footer: false, isShow: false }
+  },
+  {
+    name: 'rent',
+    path: '/rent',
+    component: () => import('@/views/rent'),
+    meta: { footer: false, isShow: false, isAdd: false, isSearch: false },
+    children: [
+      {
+        name: 'add',
+        path: 'add',
+        component: () => import('@/views/ADD'),
+        meta: { footer: false, isShow: false, isAdd: true, isSearch: false }
+      },
+      {
+        name: 'search',
+        path: 'search',
+        component: () => import('@/views/search'),
+        meta: { footer: false, isShow: false, isAdd: false, isSearch: true }
+      }
+    ]
   }
 ]
 

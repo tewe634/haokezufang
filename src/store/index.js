@@ -6,7 +6,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     token: getToken() || '',
-    city: '北京'
+    city: '北京',
+    cityObj: {}
   },
   getters: {},
   mutations: {
@@ -16,6 +17,9 @@ export default new Vuex.Store({
     },
     HOTCITY(state, payload) {
       state.city = payload
+    },
+    CITYNAME(state, payload) {
+      state.cityObj = payload
     }
   },
   actions: {},

@@ -1,6 +1,6 @@
 <template>
   <div class="list">
-    <div>
+    <div class="search">
       <!-- 搜索框 -->
       <van-nav-bar left-arrow @click-left="onClickLeft"> </van-nav-bar>
       <van-search v-model="value" show-action placeholder="请输入小区或地址">
@@ -67,6 +67,10 @@
         toolbar-position="bottom"
         :show-toolbar="true"
         :columns="columns"
+        value-key="label"
+        @confirm="affirm"
+        @cancel="isShoww = false"
+        ref="loading"
       />
     </div>
     <van-popup
@@ -112,8 +116,20 @@
       </div>
     </van-popup>
     <!-- 列表 -->
-    <van-list>
-      <van-cell v-for="(item, index) in list" :key="index">
+    <van-list
+      v-model="loading"
+      @load="onLoad"
+      :immediate-check="false"
+      :finished="finished"
+      finished-text="没有更多了"
+      :error.sync="error"
+      error-text="请求失败，点击重新加载"
+    >
+      <van-cell
+        v-for="(item, index) in list"
+        :key="index"
+        :to="{ name: `detail`, params: { code: item.houseCode } }"
+      >
         <van-row type="flex" justify="center" align="center">
           <van-col span="8">
             <van-image
@@ -142,13 +158,12 @@
 </template>
 
 <script>
-// const deep = function (arr) {
-//   if (!arr[0]) return []
-//   arr[0].children[0].children = [{ text: '' }]
-//   arr[1].children[0].children = [{ text: '' }]
-//   arr[0].children[0].defaultIndex = 1
-//   return arr
-// }
+const deep = function (arr) {
+  if (!arr[0]) return []
+  arr[0].children[0].children = [{ label: '' }]
+  arr[1].children[0].children = [{ label: '' }]
+  return arr
+}
 export default {
   name: 'list',
   data() {
@@ -162,7 +177,13 @@ export default {
       show: false,
       hotDiZhi1: this.$store.state.city,
       city: 'AREA|88cff55c-aaa4-e2e0',
-      hotCity: []
+      start: 1,
+      end: 20,
+      hotCity: [],
+      loading: false,
+      finished: false,
+      error: false,
+      num: ''
     }
   },
   methods: {
@@ -177,13 +198,22 @@ export default {
         forbidClick: true
       })
       try {
-        const params = { cityId: this.city }
+        const params = { cityId: this.city, start: this.start, end: this.end }
         const res = await this.$API.getHouse(params)
-        if (res.data.status === 200) {
+        if (res.data.body.list.length >= 10) {
           this.list = res.data.body.list
+          this.start = this.end
+          this.end = this.end + 10
+        } else {
+          // 没有数据了
+          this.finished = true
         }
       } catch (error) {
+        // 请求失败
+        this.error = true
         console.log(error.message)
+      } finally {
+        this.loading = false
       }
     },
     // 获取房屋查询条件
@@ -195,32 +225,119 @@ export default {
     },
     // 区域
     areaHouse(val) {
+      this.num = 0
       this.isShoww = true
       this.currentIndex = val
+      this.columns = this.newArr
     },
     // 方式
     madeHouse(val) {
+      this.num = 1
       this.isShoww = true
       this.currentIndex = val
-      this.columns = this.houseObj.rentType.map((item) => item.label)
+      this.columns = this.houseObj.rentType
     },
     // 租金
     rentalHouse(val) {
+      this.num = 2
       this.isShoww = true
       this.currentIndex = val
-      this.columns = this.houseObj.price.map((item) => item.label)
+      this.columns = this.houseObj.price
     },
     // 筛选
     sortHouse(val) {
+      this.num = 3
       this.isShoww = false
       this.currentIndex = val
       this.show = true
+    },
+    // 滚动事件
+    async onLoad() {
+      const params = { cityId: this.city, start: this.start, end: this.end }
+      const { data } = await this.$API.getHouse(params)
+      try {
+        if (data.status === 200) {
+          this.list.push(...data.body.list)
+          this.start = this.end
+          this.end = this.end + 10
+          this.loading = false
+        }
+      } catch (error) {
+        this.error = true
+        console.log(error.message)
+      }
+    },
+    // 确认
+    async affirm() {
+      const indexOf = this.$refs.loading.getIndexes()
+      const index = indexOf[0]
+      const index1 = indexOf[1]
+      const index2 = indexOf[2]
+      if (this.num === 1) {
+        this.isShoww = false
+        const rentType = this.houseObj.rentType[index].label
+        const params = {
+          cityId: this.city,
+          rentType,
+          start: this.start,
+          end: this.end
+        }
+        const res = await this.$API.getHouse(params)
+        this.list = res.data.body.list
+        this.start = this.end
+        this.end = this.end + 10
+      } else if (this.num === 2) {
+        this.isShoww = false
+        const price = this.houseObj.price[index].label
+        const params = {
+          cityId: this.city,
+          price,
+          start: this.start,
+          end: this.end
+        }
+        const res = await this.$API.getHouse(params)
+        this.list = res.data.body.list
+        this.start = this.end
+        this.end = this.end + 10
+      } else if (this.num === 0) {
+        if (index === 0) {
+          this.isShoww = false
+          const area =
+            this.houseObj.area.children[index1].children[index2].value
+          const params = {
+            cityId: this.city,
+            area,
+            start: this.start,
+            end: this.end
+          }
+          const res = await this.$API.getHouse(params)
+          this.list = res.data.body.list
+          this.start = this.end
+          this.end = this.end + 10
+        } else {
+          this.isShoww = false
+          const subway =
+            this.houseObj.subway.children[index1].children[index2].value
+          const params = {
+            cityId: this.city,
+            subway,
+            start: this.start,
+            end: this.end
+          }
+          const res = await this.$API.getHouse(params)
+          this.list = res.data.body.list
+          this.start = this.end
+          this.end = this.end + 10
+        }
+      }
     }
+  },
+  created() {
+    this.searchTenement()
+    this.searchHouse()
   },
   mounted() {
     this.$bus.$on('hotCityList', (val) => (this.hotCity = val))
-    this.searchTenement()
-    this.searchHouse()
   },
   watch: {
     hotDiZhi1: {
@@ -237,13 +354,24 @@ export default {
         }
       }
     }
+  },
+  computed: {
+    newArr() {
+      return deep([this.houseObj.area, this.houseObj.subway])
+    },
+    rentType() {
+      return this.houseObj.rentType
+    }
   }
 }
 </script>
 
 <style scoped lang="less">
 .list {
-  height: 0px;
+  .search {
+    position: sticky;
+    top: 0px;
+  }
 }
 :deep(.van-nav-bar) {
   background-color: #21b97a;
@@ -281,6 +409,9 @@ export default {
   .HouseItem_title__2dXar {
     font-size: 0.4rem;
     color: #394043;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .HouseItem_desc__5-mp4 {
     font-size: 0.32rem;
@@ -384,5 +515,14 @@ export default {
       font-size: 0.48rem;
     }
   }
+}
+:deep(.van-list) {
+  max-height: calc(100vh - 46px - 50px);
+  padding-bottom: 1.4667rem;
+  overflow: auto;
+}
+:deep(.van-ellipsis) {
+  position: relative;
+  top: -0.3467rem;
 }
 </style>

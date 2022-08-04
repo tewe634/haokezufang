@@ -29,3 +29,29 @@ export const getTenement = (id) =>
 export const getInfo = () => request({ url: '/user', method: 'GET' })
 // /user/logout 退出 post 带token
 export const getLogout = () => request({ url: '/user/logout', method: 'POST' })
+
+// 查询房屋具体信息 /houses/{id} get
+export const getHouseId = (id) =>
+  request({ url: `/houses/${id}`, method: 'GET' })
+
+// /user/favorites 查看收藏列表 get
+export const getFavorites = () =>
+  request({ url: '/user/favorites', method: 'GET' })
+
+// /user/houses 发布房源
+export const getAllHouse = () => request({ url: '/user/houses', method: 'GET' })
+
+// /user/favorites/{id} 添加收藏 post
+export const addCollect = (id) =>
+  request({ url: `/user/favorites/${id}`, method: 'POST' })
+
+// /user/favorites/{id} 删除收藏 DELETE
+export const delectCollect = (id) =>
+  request({ url: `/user/favorites/${id}`, method: 'DELETE' })
+
+// /user/favorites/{id} 房屋是否收藏
+export const getIsShow = (id) =>
+  request({ url: `/user/favorites/${id}`, method: 'GET' })
+// /area/community 小区关键词查询
+export const getCommunity = (params) =>
+  request({ url: '/area/community', params, method: 'GET' })

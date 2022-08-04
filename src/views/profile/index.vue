@@ -54,7 +54,7 @@
           type="flex"
           align="center"
           justify="center"
-          @click="$router.push('/login')"
+          @click="goFavorites"
         >
           <i class="iconfont icon-coll" style="font-size: 20px"></i>
           <p>我的收藏</p>
@@ -64,7 +64,7 @@
           type="flex"
           align="center"
           justify="center"
-          @click="$router.push('/login')"
+          @click="goRent"
         >
           <i class="iconfont icon-ind" style="font-size: 20px"></i>
           <p>我的出租</p>
@@ -109,23 +109,42 @@ export default {
     }
   },
   methods: {
+    // 登入退出的提示
     loginOut() {
       this.$dialog
         .confirm({
           title: '提示',
           message: '是否确认退出'
         })
-        .then(async () => {
-          const res = await this.$API.getLogout()
-          console.log(res)
+        .then(() => {
+          this.$API.getLogout()
           this.$store.commit('SEND_TOKEN', '')
         })
         .catch(() => {})
+    },
+    // 是否去收藏
+    goFavorites() {
+      if (this.token.length !== 0) {
+        this.$router.push({ path: '/favorate' })
+      } else {
+        this.$router.push('/login')
+      }
+    },
+    // 是否去房屋管理
+    goRent() {
+      if (this.token.length !== 0) {
+        this.$router.push({ path: '/rent' })
+      } else {
+        this.$router.push('/login')
+      }
     }
   },
   computed: {
     isShow() {
       return !!this.$store.state.token
+    },
+    token() {
+      return this.$store.state.token
     }
   },
   mounted() {

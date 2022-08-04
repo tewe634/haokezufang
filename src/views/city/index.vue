@@ -170,4 +170,19 @@ export default {
     color: #fff;
   }
 }
+:deep(.van-index-bar__index) {
+  margin: 0.08rem 0;
+}
+:deep(.van-index-bar__index--active) {
+  color: #fff;
+  background-color: #21b97a;
+  display: block;
+  font-size: 12px;
+  height: .4rem;
+}
+:deep(.van-index-bar) {
+max-height: calc(100vh - 46px);
+  padding-bottom: 1.3333rem;
+overflow: auto;
+}
 </style>

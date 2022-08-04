@@ -39,12 +39,6 @@ export default {
       this.hotDiZhi = str
     }
   }
-  // mounted() {
-  //   this.$bus.$on('hotDiZhi', (val) => (this.hotDiZhi = val))
-  // },
-  // beforeDestroy() {
-  //   this.$bus.$off('hotDiZhi')
-  // }
 }
 </script>
 

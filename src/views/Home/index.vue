@@ -37,11 +37,7 @@
         <p>地图找房</p>
       </div>
       <div>
-        <img
-          src="../../assets/imgs/1.png"
-          alt=""
-          @click="$router.push('/login')"
-        />
+        <img src="../../assets/imgs/1.png" alt="" @click="goAdd" />
         <p>去出租</p>
       </div>
     </div>
@@ -97,6 +93,13 @@ export default {
     },
     fn() {
       this.$bus.$emit('goList')
+    },
+    goAdd() {
+      if (this.$store.state.token) {
+        this.$router.push({ name: 'add' })
+      } else {
+        this.$router.push('/login')
+      }
     }
   },
   mounted() {
