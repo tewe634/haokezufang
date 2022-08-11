@@ -42,7 +42,7 @@
           @click="cityRoomType"
           title="户 型"
           is-link
-          :value="roomType ? roomType : '请选择'"
+          :value="roomType?.label ? roomType.label : '请选择'"
         />
       </van-list>
       <!-- 所在楼层 -->
@@ -51,7 +51,7 @@
           @click="houseFloor"
           title="所在楼层"
           is-link
-          :value="floor ? floor : '请选择'"
+          :value="floor?.label ? floor.label : '请选择'"
         />
       </van-list>
       <!-- 朝向 -->
@@ -60,7 +60,7 @@
           @click="houseOriented"
           title="朝 向"
           is-link
-          :value="oriented ? oriented : '请选择'"
+          :value="oriented?.label ? oriented.label : '请选择'"
         />
         <van-cell title="房屋标题"></van-cell>
       </van-list>
@@ -76,62 +76,21 @@
       </van-list>
       <!-- 房屋配置 -->
       <van-list>
-        <van-uploader :after-read="afterRead" />
+        <van-uploader
+          :after-read="afterRead"
+          :multiple="true"
+          v-model="files"
+        />
         <van-cell title="房屋配置"></van-cell>
       </van-list>
-      <van-grid :column-num="5">
-        <van-grid-item text="衣柜">
-          <template #icon>
-            <i class="iconfont icon-wardrobe" style="font-size: 23px"> </i>
-          </template>
-        </van-grid-item>
-        <van-grid-item text="洗衣机">
-          <template #icon>
-            <i class="iconfont icon-wash" style="font-size: 23px"> </i>
-          </template>
-        </van-grid-item>
-        <van-grid-item text="空调">
-          <template #icon>
-            <i class="iconfont icon-air" style="font-size: 23px"> </i>
-          </template>
-        </van-grid-item>
-        <van-grid-item text="冰箱">
-          <template #icon>
-            <i class="iconfont icon-ref" style="font-size: 23px"> </i>
-          </template>
-        </van-grid-item>
-        <van-grid-item text="天然气">
-          <template #icon>
-            <i class="iconfont icon-gas" style="font-size: 23px"> </i>
-          </template>
-        </van-grid-item>
-      </van-grid>
-      <van-grid :column-num="5">
-        <van-grid-item text="暖气">
-          <template #icon>
-            <i class="iconfont icon-Heat" style="font-size: 23px"> </i>
-          </template>
-        </van-grid-item>
-        <van-grid-item text="电视">
-          <template #icon>
-            <i class="iconfont icon-vid" style="font-size: 23px"> </i>
-          </template>
-        </van-grid-item>
-        <van-grid-item text="热水器">
-          <template #icon>
-            <i class="iconfont icon-heater" style="font-size: 23px"> </i>
-          </template>
-        </van-grid-item>
-        <van-grid-item text="宽带">
-          <template #icon>
-            <i class="iconfont icon-broadband" style="font-size: 23px"> </i>
-          </template>
-        </van-grid-item>
-        <van-grid-item text="沙发">
-          <template #icon>
-            <i class="iconfont icon-sofa" style="font-size: 23px"> </i>
-          </template>
-        </van-grid-item>
+      <van-grid square :column-num="5">
+        <van-grid-item
+          v-for="(item, index) in supporting"
+          :key="index"
+          :text="item.label"
+          :class="{ active: classArr[index] }"
+          @click="actionFn(index)"
+        />
       </van-grid>
       <div class="footer">
         <!-- 房屋描述 -->
@@ -145,10 +104,14 @@
       <div class="button">
         <van-row>
           <van-col span="12">
-            <van-button type="default" size="large">主要按钮</van-button>
+            <van-button type="default" size="large" @click="cancelFn"
+              >取消</van-button
+            >
           </van-col>
           <van-col span="12">
-            <van-button type="primary" size="large">默认按钮</van-button>
+            <van-button type="primary" size="large" @click="submitHouse"
+              >提交</van-button
+            >
           </van-col>
         </van-row>
       </div>
@@ -156,6 +119,8 @@
         v-if="isShow"
         show-toolbar
         :columns="columns"
+        value-key="label"
+        ref="pickers"
         @confirm="onConfirm"
         @cancel="onCancel"
       />
@@ -163,6 +128,29 @@
     <div class="deom">
       <router-view></router-view>
     </div>
+    <van-dialog
+      v-model="showBtn"
+      title="提示"
+      message="放弃发布房源?"
+      show-cancel-button
+      confirm-button-text="继续编辑"
+      confirm-button-color="#108EE9"
+      @confirm="confirmFn"
+      @cancel="cancelFns"
+    >
+    </van-dialog>
+    <van-dialog
+      v-model="show"
+      title="提示"
+      message="房源发布成功"
+      confirm-button-text="继续发布"
+      confirmButtonColor="#108EE9"
+      cancelButtonText="去查看"
+      show-cancel-button
+      @confirm="conmitFn"
+      @cancel="$router.push('/home/list')"
+    >
+    </van-dialog>
   </div>
 </template>
 
@@ -172,38 +160,61 @@ export default {
   name: 'Add',
   data() {
     return {
-      description: '',
+      description: '', // 房屋描述
       title: '', // 房屋标题
       size: '', // 面积大小
       price: '', // 租金价格
       communityName: '', // 搜索返回的名字
       community: '', // 发请求的nameid
-      roomType: '', // 几室
+      roomType: {}, // 几室
       columns: [],
       isShow: false,
-      floor: '', // 楼层
+      floor: {}, // 楼层
       num: 0,
-      oriented: ''
+      oriented: {}, // 朝向
+      houseObj: {},
+      classArr: [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      support: [],
+      files: [],
+      houseImg: '',
+      showBtn: false,
+      show: false
     }
   },
   methods: {
+    // 路由回退
     onClickLeft() {
       this.$router.back()
     },
+    // 获取图片
     async afterRead(file) {
-      // 此时可以自行将文件上传至服务器
-      console.log(file)
-      // const houseImg = await QRCode.toDataURL(file.content)
-      // console.log(houseImg)
+      // this.files.push(file)
+      const formData = new FormData()
+      this.files?.forEach((item) => formData.append('file', item.file))
+      const res = await this.$API.submitImg(formData)
+      this.houseImg = res.data.body.join('|')
     },
     // 确认
-    onConfirm(val) {
+    onConfirm() {
+      const index = this.$refs.pickers.getIndexes()
+      const indexOf = index[0]
       if (this.num === 1) {
-        this.roomType = val
+        this.roomType = this.houseObj.roomType[indexOf]
       } else if (this.num === 2) {
-        this.floor = val
+        this.floor = this.houseObj.floor[indexOf]
       } else if (this.num === 3) {
-        this.oriented = val
+        this.oriented = this.houseObj.oriented[indexOf]
       }
       this.isShow = false
       this.columns = []
@@ -217,24 +228,95 @@ export default {
     cityRoomType() {
       this.num = 1
       this.isShow = true
-      this.columns = ['一室', '二室', '三室', '四室', '四室+']
+      this.columns = this.houseObj.roomType
     },
     // 楼层
     houseFloor() {
       this.num = 2
       this.isShow = true
-      this.columns = ['高楼层', '中楼层', '低楼层']
+      this.columns = this.houseObj.floor
     },
     // 朝向
     houseOriented() {
       this.num = 3
       this.isShow = true
-      this.columns = ['东', '西', '南', '北', '东南', '西南', '东北', '西北']
+      this.columns = this.houseObj.oriented
+    },
+    // 搜索房屋所需的条件
+    async getHouseParams() {
+      const res = await this.$API.getParams()
+      this.houseObj = res.data.body
+    },
+    // 点击切换类名
+    actionFn(index) {
+      this.classArr.splice(index, 1, !this.classArr[index])
+      this.support.push(this.supporting[index].label)
+    },
+    // 提交
+    async submitHouse() {
+      if (this.houseImg === '') {
+        this.$toast('请上传房源图片')
+      } else {
+        this.$toast.loading({
+          message: '加载中...',
+          forbidClick: true
+        })
+        try {
+          const str = this.support.join('|')
+          const data = {
+            title: this.title,
+            description: this.description,
+            houseImg: this.houseImg,
+            oriented: this.oriented.value,
+            supporting: str,
+            price: this.price,
+            roomType: this.roomType.value,
+            size: this.size,
+            floor: this.floor.value,
+            community: this.community
+          }
+          await this.$API.releaseHouse(data)
+          this.show = true
+        } catch (error) {
+          this.$toast.fail('发布房源失败~')
+        }
+      }
+    },
+    // 取消
+    cancelFn() {
+      this.showBtn = true
+    },
+    confirmFn() {
+      this.showBtn = true
+    },
+    // 取消清空
+    cancelFns() {
+      this.$router.back()
+    },
+    // 继续发布
+    conmitFn() {
+      this.show = false
+      this.title = ''
+      this.description = ''
+      this.files = []
+      this.oriented = {}
+      this.supporting = []
+      this.price = ''
+      this.roomType = {}
+      this.size = ''
+      this.floor = {}
+      this.communityName = ''
     }
   },
   mounted() {
     this.communityName = this.$store.state.cityObj?.communityName
     this.community = this.$store.state.cityObj?.community
+    this.getHouseParams()
+  },
+  computed: {
+    supporting() {
+      return this.houseObj?.supporting
+    }
   }
 }
 </script>
@@ -248,6 +330,13 @@ export default {
       position: sticky;
       bottom: 0px;
       z-index: 9999;
+    }
+  }
+  :deep(.van-grid) {
+    .active {
+      .van-grid-item__text {
+        color: #21b97a;
+      }
     }
   }
   :deep(.van-nav-bar) {

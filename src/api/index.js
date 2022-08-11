@@ -55,3 +55,23 @@ export const getIsShow = (id) =>
 // /area/community 小区关键词查询
 export const getCommunity = (params) =>
   request({ url: '/area/community', params, method: 'GET' })
+//  /houses/params 发布房屋所需的条件
+export const getParams = () => request({ url: '/houses/params' })
+
+// /user/houses 发布房源 post data
+export const releaseHouse = (data) =>
+  request({ url: '/user/houses ', method: 'POST', data })
+
+// /houses/image 上传图片
+export const submitImg = (file) =>
+  request({
+    url: '/houses/image ',
+    method: 'POST',
+    data: file
+  })
+// /user/registered 用户注册 post
+export const getRegistered = (data) =>
+  request({ url: '/user/registered', method: 'POST', data })
+// /area/map 查询房源数据
+export const gethouseData = (params) =>
+  request({ url: '/area/map', method: 'GET', params })

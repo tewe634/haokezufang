@@ -103,6 +103,11 @@ const routes = [
         meta: { footer: false, isShow: false, isAdd: false, isSearch: true }
       }
     ]
+  },
+  {
+    path: '/registe',
+    component: () => import('@/views/registe'),
+    meta: { footer: false, isShow: false }
   }
 ]
 

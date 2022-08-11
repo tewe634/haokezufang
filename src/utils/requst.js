@@ -2,7 +2,7 @@ import store from '@/store'
 import axios from 'axios'
 const requst = axios.create({
   baseURL: 'http://liufusong.top:8080',
-  timeout: 5000
+  timeout: 10000
 })
 // 添加请求拦截器
 requst.interceptors.request.use(

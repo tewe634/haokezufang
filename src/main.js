@@ -7,7 +7,11 @@ import 'vant/lib/index.css'
 import 'amfe-flexible'
 import './assets/font/iconfont.css'
 import * as API from '@/api'
-
+import BaiduMap from 'vue-baidu-map'
+Vue.use(BaiduMap, {
+  /* Visit http://lbsyun.baidu.com/apiconsole/key for details about app key. */
+  ak: '3sd3tNvG6oDDu3C8Y4P21HKmkpgUhAPl'
+})
 Vue.config.productionTip = false
 Vue.use(Vant)
 new Vue({
